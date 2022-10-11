@@ -128,7 +128,7 @@ export const getDetailedListing = async ({
         accessibilityItems,
         gender,
         floorName,
-        advertiser: user ? { id: user._id, name: user.name, phone: user.phoneNo, email: user.email } : null,
+        advertiser: user ? { id: user._id, name: user.name, phone: user.phoneNo, email: user.email, pfp: user.pfp } : null,
     };
 }
 
