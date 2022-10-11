@@ -1,0 +1,205 @@
+<!-- <!DOCTYPE html>
+<html>
+  <head>
+    <title>This is the title of the webpage</title>
+    
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div>
+      <input placeholder="Enter your name" class="name" />
+      <button class="login">Login</button>
+    </div>
+    <br />
+    <div>
+      <input placeholder="Send to" class="recipient" />
+      <input placeholder="Message" class="message" />
+      <button class="send">Send</button>
+    </div>
+    <br />
+    <div>
+      <input placeholder="Enter room name" class="room" />
+      <button class="join">Join room</button>
+    </div>
+
+    <div class="form-group">
+      <label for="image">Choose Image:</label>
+      <input type="file" accept="image/*" id="file" class="form-control">
+  </div>
+  <img id="img" alt="">
+</div>
+
+    <script>
+      const socket = io("http://localhost:3000");
+
+      socket.on("new-login", (name) => {
+        console.log("new-login", name);
+      });
+
+      socket.on("private-message", (params) => {
+        console.log("private-message", params);
+      });
+
+      socket.on("joined-room", () => {
+        console.log("successfully joined");
+      });
+
+      socket.on("public-message", (message) => {
+        console.log(message);
+      });
+
+      const $loginBtn = document.querySelector(".login");
+      const $nameInput = document.querySelector(".name");
+      const $sendBtn = document.querySelector(".send");
+      const $recipientInput = document.querySelector(".recipient");
+      const $messageInput = document.querySelector(".message");
+      const $roomInput = document.querySelector(".room");
+      const $joinBtn = document.querySelector(".join");
+
+
+
+      document.getElementById('file').addEventListener('change', function () {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const base64 = this.result.replace(/.*base64,/, '');
+            console.log(base64)
+            let base64string = "data:image/jpeg;base64," + base64
+            socket.emit('image', base64string);
+        };
+        reader.readAsDataURL(this.files[0]);
+ 
+    }, false);
+  
+    socket.on('image',(data) => {
+        console.log(data)
+        document.getElementById('img').src = data
+    })
+    socket.on('user-joined',(data)=>{
+      console.log(data);
+    })
+
+      $loginBtn.addEventListener("click", () => {
+        console.log("login as", $nameInput.value);
+        socket.emit("login", $nameInput.value);
+      });
+
+      $sendBtn.addEventListener("click", () => {
+        console.log("send to", $recipientInput.value, $messageInput.value);
+        socket.emit("send-to", {
+          recipient: $recipientInput.value,
+          message: $messageInput.value,
+        });
+      });
+
+      $joinBtn.addEventListener("click", () => {
+        console.log("join", $roomInput.value);
+        socket.emit("join-room", $roomInput.value);
+      });
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="/socket.io/socket.io.js"></script>
+		<title>Document</title>
+	</head>
+	<body>
+		<div>
+			<input placeholder="Enter your ID" class="name" />
+			<button class="login">Login</button>
+		</div>
+		<div>
+			<input placeholder="senderId" class="recipient" />
+			<input placeholder="receiverId" class="message" />
+			<button class="send">Send</button>
+		</div>
+		<div>
+			<input placeholder="Enter Message" class="room" />
+
+			<input placeholder="chatId" class="chatId" />
+			<button class="join">Send Message</button>
+		</div>
+		<div class="form-group">
+			<label for="image">Choose Image:</label>
+			<input type="file" accept="image/*" id="file" class="form-control" />
+		</div>
+		<script>
+			const socket = io("http://localhost:3000");
+			// socket.on("private", (data, msg) => {
+			// 	console.log(data);
+			// 	console.log(msg);
+			// });
+			// socket.on("new-login", (name) => {
+			// 	// console.log("new-login", name);
+			// });
+			// socket.on("user-joined", (data) => {
+			// 	console.log(data);
+			// });
+			const $loginBtn = document.querySelector(".login");
+			const $nameInput = document.querySelector(".name");
+			$loginBtn.addEventListener("click", () => {
+				socket.emit("new-user-add", $nameInput.value, (id = 123));
+			});
+
+			const $sendBtn = document.querySelector(".send");
+			const $recipientInput = document.querySelector(".recipient");
+			const $messageInput = document.querySelector(".message");
+
+			$sendBtn.addEventListener("click", () => {
+				console.log("send to", $recipientInput.value, $messageInput.value);
+				socket.emit("chat-start", {
+					senderId: $recipientInput.value,
+					receiverId: $messageInput.value,
+				});
+			});
+			socket.on("chatId-receive", (chatId) => {
+				console.log(chatId);
+			});
+			const $roomInput = document.querySelector(".room");
+			const $joinBtn = document.querySelector(".join");
+			const $chatId = document.querySelector(".chatId");
+
+			$joinBtn.addEventListener("click", () => {
+				// console.log("join", $roomInput.value);
+				var text = [
+					{
+						text,
+					},
+				];
+				text[0].text = $roomInput.value;
+				const chatId = $chatId.value;
+				const receiverId = $messageInput.value;
+				const senderId = $recipientInput.value;
+				socket.emit("send-message", { receiverId, chatId, senderId, text });
+			});
+
+			socket.on("recieve-message", (chatId) => {
+				console.log(chatId);
+			});
+			document.getElementById("file").addEventListener(
+				"change",
+				function () {
+					const reader = new FileReader();
+					reader.onload = function () {
+						const base64 = this.result.replace(/.*base64,/, "");
+						console.log(base64);
+						let base64string = "data:image/jpeg;base64," + base64;
+						socket.emit("image", base64string);
+					};
+					reader.readAsDataURL(this.files[0]);
+				},
+				false
+			);
+
+			//   socket.on('image',(data) => {
+			//     console.log(data)
+			//     document.getElementById('img').src = data
+			// })
+		</script>
+	</body>
+</html>
