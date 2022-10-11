@@ -17,7 +17,7 @@ router.post("/charData", chartData);
 router.get("/getCount", getCountOfDocs);
 router.post("/getInPolygon", getListingsInsidePolygon);
 router.get("/getIDs", getIDs);
-router.get("/getByUser/:id", getByUser);
+router.post("/getByUser/:id", getByUser);
 router.post("/get/:id", get);
 router.post("/filter", auth, filter);
 router.post("/searchByCity", searchByCity);

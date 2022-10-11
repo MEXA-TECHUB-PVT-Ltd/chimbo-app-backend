@@ -355,7 +355,9 @@ export const getIDs = catchAsync(async (req, res) => {
 });
 export const getByUser = catchAsync(async (req, res) => {
     const listing = await Listings.find({ advertiser: req.params.id });
-    if (!listing) {
+    const viewerId = req.body.viewerId;
+
+    if (listing.length == 0) {
         return res.json({
             success: false,
             status: 404,
@@ -371,6 +373,27 @@ export const getByUser = catchAsync(async (req, res) => {
                 await getDetailedListing(listing[i].toObject())
             )
         }
+
+        const userWishlist = await wishlistModel.find({ userId: viewerId });
+        console.log(userWishlist);
+
+        for (let i = 0; i < detailedListings.length; i++) {
+
+            for (let j = 0; j < userWishlist.length; j++) {
+                console.log(userWishlist[j].listingId);
+
+                console.log(detailedListings[i]._id);
+
+                if (detailedListings[i]._id.toString() == userWishlist[j].listingId.toString()) {
+
+                    detailedListings[i].likedStatus = "liked";
+                    detailedListings[i].recordId = userWishlist[j]._id;
+                }
+
+            }
+        }
+
+
         return res.json({
             success: true,
             message: "Listing found",
