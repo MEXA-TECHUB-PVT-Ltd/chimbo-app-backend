@@ -26,9 +26,9 @@ route.get("/get/:id", get);
 route.put("/add", add);
 route.post("/login", login);
 
-route.patch("/update", auth, update);
-route.patch("/update-password", auth, updatePassword);
-route.delete("/delete/:id", auth, del);
+route.patch("/update", update);
+route.patch("/update-password", updatePassword);
+route.delete("/delete/:id", del);
 route.patch("/block", block);
 route.patch("/unblock", unblock);
 route.post("/getByEmail", getByEmail);

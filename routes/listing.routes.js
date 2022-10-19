@@ -35,6 +35,6 @@ router.post(
 
 router.put("/add", chklisting, add);
 router.delete("/delete/:id", del);
-router.patch("/update", auth, update);
+router.patch("/update", update);
 
 export default router;
