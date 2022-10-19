@@ -15,6 +15,7 @@ import geolib from 'geolib';
 import { getDetailedListing, createQuery, filterListings } from '../utils/listingUtils.js'
 import floorModel from "../models/floorModel.js";
 import userModel from "../models/userModel.js";
+import adminModel from "../models/adminModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import { format } from 'date-fns'
 export const getAll = catchAsync(async (req, res) => {
@@ -194,7 +195,7 @@ export const filter = catchAsync(async (req, res) => {
         .skip(recordPerPage * pageNo);
     ;
     const filteredListings = filterListings(temp, data)
-
+    console.log(filteredListings);
 
     console.log("here 2")
     const detailedListings = [];
@@ -215,11 +216,12 @@ export const filter = catchAsync(async (req, res) => {
 
     const Array1 = filteredListings.map((item, index) => {
 
-        const { price, beds, m2, floor, city, streetName, streetNo, advertiser, imagePaths, _id, location } = item
+        const { price, beds, m2, floor, city, streetName, streetNo, advertiser, imagePaths, _id, location, addedBy } = item
 
-        return { price, beds, m2, floor, city, streetName, streetNo, advertiser, imagePaths, _id, location };
+        return { price, beds, m2, floor, city, streetName, streetNo, advertiser, imagePaths, _id, location, addedBy };
 
     }
+
 
     )
     const userWishlist = await wishlistModel.find({ userId: viewerId });
@@ -257,8 +259,19 @@ export const filter = catchAsync(async (req, res) => {
             Array1[i].floor = "";
         }
         if (Array1[i].advertiser !== undefined) {
-            advertisers = await userModel.findOne({ _id: Array1[i].advertiser }, "phoneNo")
-            Array1[i].advertiser = advertisers;
+            if (Array1[i].addedBy === "user") {
+
+
+                advertisers = await userModel.findOne({ _id: Array1[i].advertiser }, "phoneNo")
+                Array1[i].advertiser = advertisers;
+            }
+            else if (Array1[i].addedBy === "admin") {
+
+
+                advertisers = await adminModel.findOne({ _id: Array1[i].advertiser }, "phoneNo")
+                Array1[i].advertiser = advertisers;
+            }
+
         }
         else {
             Array1[i].advertiser = "";

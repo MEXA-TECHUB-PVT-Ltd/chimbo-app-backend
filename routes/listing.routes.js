@@ -19,7 +19,7 @@ router.post("/getInPolygon", getListingsInsidePolygon);
 router.get("/getIDs", getIDs);
 router.post("/getByUser/:id", getByUser);
 router.post("/get/:id", get);
-router.post("/filter", auth, filter);
+router.post("/filter", filter);
 router.post("/searchByCity", searchByCity);
 
 router.post(

@@ -80,14 +80,14 @@ export const getDetailedListing = async ({
         floor,
         floorModel
     );
-    console.log(addedBy);
+
     if (addedBy === "user") {
         user = await getItemDetails(advertiser, Users);
         console.log(user);
     }
     else if (addedBy === "admin") {
         user = await getItemDetails(advertiser, Admins);
-        console.log(user);
+        console.log("admin");
     }
     const occupationType = await getRefDetails(
         occupationTypeId,
