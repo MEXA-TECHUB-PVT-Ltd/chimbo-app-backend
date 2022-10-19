@@ -1,3 +1,4 @@
+import adminModel from "../models/adminModel.js";
 import floorModel from "../models/floorModel.js";
 import listingModel from "../models/listingModel.js";
 import userModel from "../models/userModel.js";
@@ -65,14 +66,14 @@ export const getByUser = catchAsync(async (req, res) => {
     }
 
     for (let i = 0; i < wishListItems.length; i++) {
-        var data = {};
-        data = await listingModel.findOne({ _id: wishListItems[i].listingId }, "price beds m2 floor city streetName streetNo advertiser imagePaths floor")
+
+        var data = await listingModel.findOne({ _id: wishListItems[i].listingId }, "price beds m2 floor city streetName streetNo advertiser imagePaths floor addedBy")
         console.log(data);
         var obj = wishListItems[i].toObject();
         obj.listingDetails = data;
 
         var floors = {};
-        var advertisers = {};
+
         if (obj.listingDetails?.floor !== undefined) {
             floors = await floorModel.findOne({ _id: obj.listingDetails.floor }, "name")
             obj.listingDetails.floor = floors;
@@ -81,10 +82,31 @@ export const getByUser = catchAsync(async (req, res) => {
             obj.listingDetails?.floor === null ? null : "";
         }
         if (obj.listingDetails?.advertiser !== undefined) {
-            advertisers = await userModel.findOne({ _id: obj.listingDetails.advertiser }, "phoneNo");
-            console.log(advertisers);
+            if (obj.listingDetails.addedBy === "admin") {
+                const advertisers = await adminModel.findOne({ _id: obj.listingDetails.advertiser }, "phoneNo");
+                console.log(advertisers);
+                // const obj3 = advertisers;
+                // Object.assign(obj.listingDetails, { advertiser: advertisers });
+                // const clonedObj = { ...obj };
+                // console.log(clonedObj);
+                obj = { ...obj, advertiser: advertisers };
+                // console.log(o3);
+                // clonedObj.listingDetails.advertiser = obj3;
+                // obj = o3;
+                console.log("advertiser");
+            }
+            else if (obj.listingDetails.addedBy === "user") {
+                const advertisers = await userModel.findOne({ _id: obj.listingDetails.advertiser }, "phoneNo");
+                console.log(advertisers);
+                obj = { ...obj, advertiser: advertisers };
+                console.log("advertiser");
+            }
+
+            // advertisers = await userModel.findOne({ _id: obj.listingDetails.advertiser }, "phoneNo");
+            // console.log(advertisers);
+
             // var obj = wishListItems[i].listingDetails.toObject();
-            obj.listingDetails.advertiser = advertisers;
+            // obj.listingDetails.advertiser = advertisers;
             // wishListItems[i].listingDetails = obj;
         }
         else {
