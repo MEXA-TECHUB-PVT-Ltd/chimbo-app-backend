@@ -354,7 +354,7 @@ export const getIDs = catchAsync(async (req, res) => {
 
 });
 export const getByUser = catchAsync(async (req, res) => {
-    const listing = await Listings.find({ advertiser: req.params.id });
+    const listing = await Listings.find({ advertiser: req.params.id }, "price beds m2 floor city streetName streetNo advertiser imagePaths location addedBy");
     const viewerId = req.body.viewerId;
 
     if (listing.length == 0) {

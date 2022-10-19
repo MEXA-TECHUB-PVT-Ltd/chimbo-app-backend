@@ -83,12 +83,12 @@ app.use("/api/occupation-types", occupationType)
 app.use("/api/listing-types", listingType)
 app.use("/api/floors", floor)
 app.use("/api/chat", chat)
-app.use('/images', express.static('images'));
+// app.use('/images', express.static('images'));
 // app.use('/profile-photos', express.static('images/profile-photos'));
 
 
 
-app.use("*", (req, res, next) => {
+app.use("/*", (req, res, next) => {
     const err = new AppError(404, "fail", "undefined route");
     next(err, req, res, next);
 });

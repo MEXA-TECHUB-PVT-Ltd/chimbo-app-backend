@@ -32,7 +32,7 @@ export const getDetailedListing = async ({
     const getRefDetails = async (refs, Model, name) => {
 
         let items = [];
-        for (let i = 0; i < refs.length; i++) {
+        for (let i = 0; i < refs?.length; i++) {
             const { id, ...rest } = refs[i];
             const res = await Model.findOne({ _id: id });
             console.log(id);
@@ -80,6 +80,7 @@ export const getDetailedListing = async ({
         floor,
         floorModel
     );
+    console.log(addedBy);
     if (addedBy === "user") {
         user = await getItemDetails(advertiser, Users);
         console.log(user);
