@@ -277,7 +277,14 @@ export const update = catchAsync(async (req, res, next) => {
     //     delete data.password
     // }
 
-    const admin = await Admins.updateOne({ _id: req.body.id }, { email: req.body?.email, phoneNo: req.body?.phoneNo, pfp: req.body?.pfp })
+    let admin;
+    if (req.body?.pfp !== "") {
+
+        admin = await Admins.updateOne({ _id: req.body.id }, { email: req.body?.email, phoneNo: req.body?.phoneNo, pfp: req.body?.pfp })
+    }
+    else {
+        admin = await Admins.updateOne({ _id: req.body.id }, { email: req.body?.email, phoneNo: req.body?.phoneNo })
+    }
 
     if (admin) {
         return res.status(200).json({

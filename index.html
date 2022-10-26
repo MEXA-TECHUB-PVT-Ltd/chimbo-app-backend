@@ -114,8 +114,8 @@
 			<button class="login">Login</button>
 		</div>
 		<div>
-			<input placeholder="senderId" class="recipient" />
-			<input placeholder="receiverId" class="message" />
+			<input placeholder="recieverId" class="recipient" />
+			<input placeholder="message" class="message" />
 			<button class="send">Send</button>
 		</div>
 		<div>
@@ -143,20 +143,20 @@
 			const $loginBtn = document.querySelector(".login");
 			const $nameInput = document.querySelector(".name");
 			$loginBtn.addEventListener("click", () => {
-				socket.emit("new-user-add", $nameInput.value, (id = 123));
+				socket.emit("new-user-add", $nameInput.value);
 			});
 
 			const $sendBtn = document.querySelector(".send");
 			const $recipientInput = document.querySelector(".recipient");
 			const $messageInput = document.querySelector(".message");
 
-			$sendBtn.addEventListener("click", () => {
-				console.log("send to", $recipientInput.value, $messageInput.value);
-				socket.emit("chat-start", {
-					senderId: $recipientInput.value,
-					receiverId: $messageInput.value,
-				});
-			});
+			// $sendBtn.addEventListener("click", () => {
+			// 	console.log("send to", $recipientInput.value, $messageInput.value);
+			// 	socket.emit("chat-start", {
+			// 		senderId: $recipientInput.value,
+			// 		receiverId: $messageInput.value,
+			// 	});
+			// });
 			socket.on("chatId-receive", (chatId) => {
 				console.log(chatId);
 			});
@@ -164,18 +164,18 @@
 			const $joinBtn = document.querySelector(".join");
 			const $chatId = document.querySelector(".chatId");
 
-			$joinBtn.addEventListener("click", () => {
+			$sendBtn.addEventListener("click", () => {
 				// console.log("join", $roomInput.value);
 				var text = [
 					{
 						text,
 					},
 				];
-				text[0].text = $roomInput.value;
-				const chatId = $chatId.value;
-				const receiverId = $messageInput.value;
-				const senderId = $recipientInput.value;
-				socket.emit("send-message", { receiverId, chatId, senderId, text });
+				// const msg = $roomInput.value;
+				// const chatId = $chatId.value;
+				const msg = $messageInput.value;
+				const to = $recipientInput.value;
+				socket.emit("send-msg", { to, msg });
 			});
 
 			socket.on("recieve-message", (chatId) => {

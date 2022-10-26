@@ -27,7 +27,7 @@ import AppError from "./utils/appError.js";
 app.use(express.static('public'));
 app.use(cors());
 app.use(express.json())
-app.get("/", (req, res) => {
+app.get("/chk", (req, res) => {
     res.sendFile(__dirname + "/index.html");
 });
 
@@ -147,6 +147,30 @@ function decodeBase64Image(dataString) {
 
 
 
+global.onlineUsers = new Map();
+io.on("connection", (socket) => {
+    global.chatSocket = socket;
+
+    socket.on("new-user-add", (userId) => {
+        onlineUsers.set(userId, socket.id);
+        console.log(onlineUsers);
+    });
+
+    socket.on("send-msg", (data) => {
+        console.log(data);
+        console.log(socket.id);
+        const sendUserSocket = onlineUsers.get(data.to);
+        if (sendUserSocket) {
+            console.log(data.msg);
+            socket.to(sendUserSocket).emit("recieve-message", data.msg);
+        }
+    });
+});
+
+
+
+
+/*
 let activeUsers = [];
 
 io.on("connection", (socket) => {
@@ -332,65 +356,4 @@ io.on("connection", (socket) => {
 
 });
 
-
-// const array1 = [{ a: 2, b: 5 }, { a: 3, b: 6 }];
-
-// // pass a function to map
-// const map1 = array1.map(x => {
-
-//     // {a}=x;
-
-//     ({ a, b } = x);
-//     console.log(x);
-// });
-
-
-
-
-
-
-
-
-/*
-    "price": {
-        "min": 1000,
-        "max": 19000
-    },
-    "roomSharedWith": 2,
-    "genderPreferenceId": "62e2485a95073225804a82f9",
-    "listingTypeId": "62e3e3fd0ff6e34e38970c42",
-    "propertyTypeId": "62e386b7b43d84ff1e4b31a6",
-    "heatingType": "62e38b50c9350283f1ed5bc3",
-    "occupationType": "62e3e578dc99058c83db5f85",
-    "specifications": [
-        {
-            "id": "62e3e6cda52dd173cd82d625",
-            "value": true
-        },
-        {
-            "id": "62e3e6eea52dd173cd82d628",
-            "value": 2000
-        }
-    ],
-    "roomCharacteristics": [
-        {
-            "id": "62e3e7b205cd2976dd23a501",
-            "value": false
-        },
-        {
-            "id": "62e3e7ca05cd2976dd23a504",
-            "value": false
-        }
-    ],
-    "features": [
-        {
-            "id": "62e3e8896c74fe1ca455164e",
-            "value": true
-        }
-    ]
-}
-  "location": {
-        "long": "77",
-        "lat": "33",
-        "radius": 10
-    },*/
+*/
