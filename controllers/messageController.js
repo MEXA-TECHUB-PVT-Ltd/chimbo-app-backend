@@ -26,7 +26,9 @@ export const addMessage = async (req, res) => {
 export const getMessages = async (req, res) => {
     const { chatId } = req.params;
     try {
+        console.log("hasnat");
         const result = await MessageModel.find({ chatId });
+        console.log(result);
         res.status(200).json(result);
     } catch (error) {
         res.status(500).json(error);
@@ -36,7 +38,7 @@ export const getMessages = async (req, res) => {
 
 
 export const deleteMessage = async (req, res) => {
-
+    // await MessageModel.deleteMany();
     const messageId = req.params.m_id;
 
     let errResponse = {

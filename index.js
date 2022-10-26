@@ -228,16 +228,21 @@ io.on("connection", (socket) => {
             chatId: chatId,
             senderId: senderId,
             text: text,
-            msg_type: msg_type
+            msg_type: msg_type,
+
+            time: new Date()
         });
         message.save(function (err) {
             if (!err) {
+                console.log(message);
                 console.log("Message has been stored in message database")
             } else {
                 console.log("Error in storing messages");
             }
         })
         if (user) {
+            data.time = message.time;
+            console.log(message);
             io.to(user.socketId).emit("recieve-message", data);
         }
     });

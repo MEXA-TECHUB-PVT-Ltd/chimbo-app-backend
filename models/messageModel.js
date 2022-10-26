@@ -5,8 +5,8 @@ const MessageSchema = new mongoose.Schema(
         chatId: {
             type: String,
         },
-        user: {
-            _id: String,
+        senderId: {
+            type: String,
         },
         text: {
             type: String,
@@ -15,6 +15,9 @@ const MessageSchema = new mongoose.Schema(
             type: String,
             enum: ["text", "image", "video"]
         },
+        time: {
+            type: Date
+        },
         public_id: String,
     },
     {
@@ -22,5 +25,5 @@ const MessageSchema = new mongoose.Schema(
     }
 );
 
-const MessageModel = mongoose.model("Message", MessageSchema);
+const MessageModel = mongoose.model("Message2", MessageSchema);
 export default MessageModel

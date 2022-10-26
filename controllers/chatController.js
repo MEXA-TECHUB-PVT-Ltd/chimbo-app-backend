@@ -1,7 +1,7 @@
 import ChatModel from "../models/chatModel.js";
 import mongoose from "mongoose";
 import messageModel from "../models/messageModel.js";
-
+import { ObjectId } from "mongodb";
 
 export const createChat = async (req, res) => {
 
@@ -43,8 +43,9 @@ export const createChat = async (req, res) => {
 };
 
 export const userChats = async (req, res) => {
-    var ObjectId = require('mongodb').ObjectId
+    // var ObjectId = require('mongodb').ObjectId
     let userId = req.params.userId;
+    console.log(userId);
     userId = new ObjectId(userId);
     try {
         const result = await ChatModel.aggregate([
