@@ -11,6 +11,11 @@ const MessageSchema = new mongoose.Schema(
         text: {
             type: String,
         },
+        msg_type: {
+            type: String,
+            enum: ["text", "image", "video"]
+        },
+        public_id: String,
     },
     {
         timestamps: true,

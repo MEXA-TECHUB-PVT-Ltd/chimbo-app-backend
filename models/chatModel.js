@@ -2,9 +2,7 @@ import mongoose from "mongoose";
 
 const ChatSchema = new mongoose.Schema(
     {
-        members: {
-            type: Array,
-        },
+        members: [mongoose.Schema.Types.ObjectId]
     },
     {
         timestamps: true,

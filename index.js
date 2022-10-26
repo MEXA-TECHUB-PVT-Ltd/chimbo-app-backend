@@ -7,7 +7,8 @@ import MessageModel from "./models/messageModel.js"
 import cors from 'cors';
 import { config } from "dotenv";
 import fs from "fs";
-
+import cloudinary from "./utils/cloundinary.js";
+import upload from "./middleware/multer.js";
 config({
     path: "./config.env",
 });
@@ -63,7 +64,7 @@ import occupationType from "./routes/occupationType.routes.js"
 import listingType from "./routes/listingType.routes.js"
 import floor from "./routes/floors.routes.js"
 import chat from "./routes/chat.routes.js"
-
+import message from "./routes/messages.routes.js"
 
 
 
@@ -83,6 +84,7 @@ app.use("/api/occupation-types", occupationType)
 app.use("/api/listing-types", listingType)
 app.use("/api/floors", floor)
 app.use("/api/chat", chat)
+app.use("/api/message", message)
 // app.use('/images', express.static('images'));
 // app.use('/profile-photos', express.static('images/profile-photos'));
 
@@ -95,85 +97,44 @@ app.use("/*", (req, res, next) => {
 
 app.use(globalErrHandler);
 
+server.listen(3000, () => {
+    console.log("server Started at 3000");
+})
 
-
-// const user = {};
-
-// io.on("connection", (socket) => {
-//     // add new User
-//     socket.on("login", (newUserId) => {
-//         console.log(newUserId);
-//         user[socket.id] = newUserId;
-//         console.log(socket.id);
-//         console.log(newUserId);
-//         socket.emit('user-joined', newUserId)
-//         console.log(user);
-//         socket.username = "hasnat"
-//         console.log(socket);
-//         // if user is not added previously
-//         // if (!activeUsers.some((user) => user.userId === newUserId)) {
-//         //     activeUsers.push({ userId: newUserId, socketId: socket.id });
-//         //     console.log("New User Connected", activeUsers);
-//         // }
-//         // send all active users to new user
-//         // io.emit("get-users", activeUsers);
-//     });
-// });
-// io.on("connection", socket => {
-//     console.log(socket.id);
-//     // socket.on("private message", (msg, id) => {
-//     //     // console.log(id);
-//     //     socket.join(id)
-//     //     console.log(msg);
+let activeUsers = [];
 
 
 
-//     //     io.to(id).emit("private", socket.id, msg);
-//     // });
-// });
-server.listen(3000, function () {
-    console.log("server started on port 3000")
+
+
+app.post("/api/sendFile", upload.single("file"), async (req, res) => {
+    try {
+        console.log(req.file)
+        if (req.file) {
+            const result = await cloudinary.uploader.upload(req.file.path, { resource_type: "auto" })
+            if (result) {
+                console.log(result)
+                res.json({
+                    message: "uploaded to cloudinary",
+                    fileUrl: result.secure_url,
+                    public_id: result.public_id
+                })
+            }
+        }
+    }
+    catch (error) {
+        console.log(error)
+        res.json({
+            message: "Error occurred while sending image",
+            error: error
+        })
+    }
 })
 
 
-function decodeBase64Image(dataString) {
-
-
-    var buffer = Buffer.from(dataString, 'base64');
-
-    return buffer
-
-}
-
-
-
-global.onlineUsers = new Map();
-io.on("connection", (socket) => {
-    global.chatSocket = socket;
-
-    socket.on("new-user-add", (userId) => {
-        onlineUsers.set(userId, socket.id);
-        console.log(onlineUsers);
-    });
-
-    socket.on("send-msg", (data) => {
-        console.log(data);
-        console.log(socket.id);
-        const sendUserSocket = onlineUsers.get(data.to);
-        if (sendUserSocket) {
-            console.log(data.msg);
-            socket.to(sendUserSocket).emit("recieve-message", data.msg);
-        }
-    });
-});
-
-
-
-
-/*
-let activeUsers = [];
 
 io.on("connection", (socket) => {
+
     // add new User
     socket.on("new-user-add", (newUserId) => {
         // if user is not added previously
@@ -184,6 +145,7 @@ io.on("connection", (socket) => {
         // send all active users to new user
         io.emit("get-users", activeUsers);
     });
+
 
 
     socket.on("disconnect", () => {
@@ -197,22 +159,37 @@ io.on("connection", (socket) => {
     // send message to a specific user
 
 
-    socket.on("chat-start", (data) => {
-        console.log(data);
-        console.log("has");
+
+
+
+
+    socket.on("chat-start", async (data) => {
         var { senderId, receiverId } = data;
 
-        const newChat = new ChatModel({
-            members: [senderId, receiverId],
+        const checkResult = await ChatModel.findOne({
+            members: { $all: [senderId, receiverId] },
         });
 
-        const result = newChat.save(function (err) {
+        if (!checkResult) {
+            const newChat = new ChatModel({
+                members: [senderId, receiverId],
+            });
+            var savedChat = newChat.save();
+        }
+        else {
+            var savedChat = await ChatModel.findOneAndUpdate({ _id: checkResult._id },
+                {
+                    members: [senderId, receiverId],
+                },
+                {
+                    new: true,
+                },
+            )
+        }
 
-            if (err) {
-                console.log("error in chat")
-            } else {
+        try {
+            if (savedChat) {
                 console.log("successfully stored")
-                console.log(newChat)
 
                 ChatModel.findOne({
                     members: { $all: [senderId, receiverId] },
@@ -227,36 +204,32 @@ io.on("connection", (socket) => {
                 });
 
             }
-        });
-
-
-
-
-
-
+        }
+        catch (err) {
+            console.log(err);
+            console.log("error in saving chat");
+        }
     })
+
+
+
     socket.on("send-message", (data) => {
         const { receiverId } = data;
         const user = activeUsers.find((user) => user.userId === receiverId);
+
         console.log("Sending from socket to :", receiverId)
         console.log("Data: ", data)
-        console.log(activeUsers);
-        console.log(user);
-        // console.log(user.socketId);
-        const { chatId, senderId } = data;
-        const text = data.text;
-        console.log(text);
+
+
+        const { chatId, senderId, msg_type } = data;
+        const text = data.text
         const message = new MessageModel({
+            _id: mongoose.Types.ObjectId(),
             chatId: chatId,
-            user: {
-                _id: senderId
-            },
+            senderId: senderId,
             text: text,
+            msg_type: msg_type
         });
-        const obj = {};
-        obj.user = senderId;
-        obj.content = text;
-        obj.sId = socket.id;
         message.save(function (err) {
             if (!err) {
                 console.log("Message has been stored in message database")
@@ -265,95 +238,11 @@ io.on("connection", (socket) => {
             }
         })
         if (user) {
-            const Sockkt = { id: user.socketId }
-
-            // console.log(user.s   ocketId);
-            io.to(user.socketId).emit("recieve-message", obj);
+            io.to(user.socketId).emit("recieve-message", data);
         }
     });
 
-    // io.on('connection', (socket) => {
-    //     console.log('a user connected');
 
-    //     socket.on("chat-start", (data) => {
-    //         console.log(data);
-    //         console.log("has");
-    //         var { senderId, receiverId } = data;
-
-    //         const newChat = new ChatModel({
-    //             members: [senderId, receiverId],
-    //         });
-
-    //         const result = newChat.save(function (err) {
-
-    //             if (err) {
-    //                 console.log("error in chat")
-    //             } else {
-    //                 console.log("successfully stored")
-    //                 console.log(newChat)
-
-    //                 ChatModel.findOne({
-    //                     members: { $all: [senderId, receiverId] },
-    //                 }, (err, foundResult) => {
-    //                     if (foundResult) {
-    //                         console.log("This is chatId:" + foundResult._id)
-    //                         let chatId = foundResult._id;
-    //                         socket.emit("chatId-receive", chatId)
-    //                     } else {
-    //                         console.log("error in getting")
-    //                     }
-    //                 });
-
-    //             }
-    //         });
-
-    //     });
-
-    //     socket.on('send-message', (data) => {
-    //         console.log("received message in server side", data)
-    //         io.emit('receive-message', data)
-    //     })
-
-    //     socket.on('disconnect', () => {
-    //         console.log('user disconnected');
-    //     });
-
-    // })
-    socket.on('image', (data1) => {
-        //console.log(data)
-        var data = data1.replace("data:image/jpeg;base64,", "");
-        console.log(data)
-        var imageBuffer = decodeBase64Image(data);
+})
 
 
-
-        console.log("Buffer is:" + imageBuffer);
-        const file = Date.now() + "380925" + "chatImg.png";
-        const path = "./chatImages/" + file
-        fs.writeFile(path, imageBuffer, function (err) {
-            if (!err) {
-                console.log("saved")
-            }
-        });
-
-
-        const screenshot = new chatImageModel({
-            chatId: "380925",
-            senderId: "33434",
-            imagePath: path
-        })
-
-        screenshot.save(function (err) {
-            if (!err) {
-                console.log("Image sucessfully")
-                io.sockets.emit('image', data1)
-            }
-        })
-
-    })
-
-
-
-});
-
-*/

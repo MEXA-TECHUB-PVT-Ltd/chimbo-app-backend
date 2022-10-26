@@ -1,44 +1,99 @@
 import ChatModel from "../models/chatModel.js";
-import MessageModel from "../models/messageModel.js";
-import catchAsync from "../utils/catchAsync.js";
+import mongoose from "mongoose";
+import messageModel from "../models/messageModel.js";
+
 
 export const createChat = async (req, res) => {
-    const newChat = new ChatModel({
-        members: [req.body.senderId, req.body.receiverId],
+
+    const senderId = req.body.senderId;
+    const receiverId = req.body.receiverId;
+
+    const checkResult = await ChatModel.findOne({
+        members: { $all: [senderId, receiverId] },
     });
+
+    if (!checkResult) {
+        const newChat = new ChatModel({
+            _id: mongoose.Types.ObjectId(),
+            members: [senderId, receiverId],
+        });
+        var savedChat = await newChat.save();
+    }
+    else {
+        var savedChat = await ChatModel.findOneAndUpdate({ _id: checkResult._id },
+            {
+                members: [req.body.senderId, req.body.receiverId],
+            },
+            {
+                new: true,
+            },
+        )
+    }
+
     try {
-        const result = await newChat.save();
-        res.status(200).json(result);
-    } catch (error) {
-        res.status(500).json(error);
+        if (savedChat) {
+            res.json({
+                message: "chat has stored",
+                result: savedChat
+            })
+        }
+    } catch (err) {
+        res.json(err)
     }
 };
 
 export const userChats = async (req, res) => {
+    var ObjectId = require('mongodb').ObjectId
+    let userId = req.params.userId;
+    userId = new ObjectId(userId);
     try {
-        const chat = await ChatModel.find({
-            members: { $in: [req.params.userId] },
-        });
-        res.status(200).json(chat);
-    } catch (error) {
-        res.status(500).json(error);
+        const result = await ChatModel.aggregate([
+            {
+                "$match": { $expr: { "$in": [userId, { "$ifNull": ["$members", []] }] } }
+            },
+            {
+                $lookup: {
+                    from: 'users', let: { userId: '$members' },
+                    pipeline: [
+                        { $match: { $expr: { $in: ["$_id", "$$userId"] } } }
+                        // Add additional stages here 
+                    ],
+                    as: 'userDetails'
+                }
+            }
+        ])
+
+
+
+        if (result.length > 0) {
+
+            res.json({
+                message: "chats of this user",
+                result: result,
+
+            })
+        }
+        else {
+            res.json({
+                message: "could not found chats of this user",
+                result: result
+            })
+        }
+
     }
-};
+    catch (err) {
+        res.json({
+            message: "Error Occurred",
+            errorMessage: err.message
+        })
+    }
+}
+
 
 export const findChat = async (req, res) => {
     try {
         const chat = await ChatModel.findOne({
             members: { $all: [req.params.firstId, req.params.secondId] },
-        });
-        res.status(200).json(chat)
-    } catch (error) {
-        res.status(500).json(error)
-    }
-};
-export const getAllMsgs = async (req, res) => {
-    try {
-        const chat = await MessageModel.find({
-            chatId: req.params.chatId,
         });
         res.status(200).json(chat)
     } catch (error) {
