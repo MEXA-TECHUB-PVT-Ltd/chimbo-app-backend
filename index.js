@@ -106,7 +106,7 @@ app.use("/*", (req, res, next) => {
 
 app.use(globalErrHandler);
 
-server.listen(3000, () => {
+server.listen(5000, () => {
     console.log("server Started at 3000");
 })
 
