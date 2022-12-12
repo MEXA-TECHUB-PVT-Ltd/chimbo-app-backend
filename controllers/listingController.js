@@ -18,6 +18,73 @@ import userModel from "../models/userModel.js";
 import adminModel from "../models/adminModel.js";
 import wishlistModel from "../models/wishlistModel.js";
 import { format } from 'date-fns'
+
+export const getIDsByLocation =  async(req, res) => {
+    const ParamsId=req.params.userId;
+    const userLat=req.params.userLat;
+    const userLong=req.params.userLong;
+    // const userLat=33.6521074;
+    // const userLong=73.0817038;
+    // console.log(ParamsId)
+    // console.log(userLat)
+    // console.log(userLong)
+    let Array =[];
+     Listings.find({}, (error, result) => {
+        if (error) {
+            res.send(error)
+        } else {
+            if(result){
+                Array =result;
+                for(let i = 0; i < result.length; i++) {
+                    let lat2=Array[i].location.coordinates[1];
+                    let long2=Array[i].location.coordinates[0];
+                   
+                        var radlat1 = Math.PI * userLat/180;
+                        var radlat2 = Math.PI * lat2/180;
+                        var theta = userLong-long2;
+                        var radtheta = Math.PI * theta/180;
+                        var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+                        if (dist > 1) {
+                            dist = 1;
+                        }
+                        dist = Math.acos(dist);
+                        dist = dist * 180/Math.PI;
+                        dist = dist * 60 * 1.1515;
+                        // console.log(dist);
+                     
+                        Array[i].distance=dist;
+
+               
+            }
+            res.json(Array);
+            }else{
+                console.log('no data in listing')
+            }
+           
+        }
+    }).sort({ $natural: -1 })
+
+};
+export const AddLikeByUserId = catchAsync(async (req, res) => {
+    const userId=req.params.userId;
+    const ListingId=req.params.ListingId;
+    const updateData = {
+        $push: {
+            likedBy: userId,
+        }
+    }
+    const options = {
+        new: true
+    }
+    Listings.findByIdAndUpdate(ListingId, updateData, options, (error, result) => {
+        if (error) {
+            res.json(error.message)
+        } else {
+            res.send({data:result,message:"Updated Successfully"})
+        }
+    })
+  
+});
 export const getAll = catchAsync(async (req, res) => {
     // await Listings.deleteMany()
     const recordPerPage = 5;
@@ -66,41 +133,41 @@ export const getAll = catchAsync(async (req, res) => {
 });
 
 export const get = catchAsync(async (req, res) => {
-    const userId = req.params.id;
-    Listings.find({ _id: userId }, function (err, foundResult) {
-      try {
-        res.json(foundResult);
-      } catch (err) {
-        res.json(err);
-      }
-    })
-    // const viewerId = req.body?.viewerId;
-    // console.log(viewerId);
-    // const listing = await Listings.findOne({ _id: req.params.id });
-    // if (!listing) {
-    //     return res.json({
-    //         success: false,
-    //         status: 404,
-    //         message: "Listing Not found",
-    //     });
-    // }
+    // const userId = req.params.id;
+    // Listings.find({ _id: userId }, function (err, foundResult) {
+    //   try {
+    //     res.json(foundResult);
+    //   } catch (err) {
+    //     res.json(err);
+    //   }
+    // })
+    const viewerId = req.body?.viewerId;
+    console.log(viewerId);
+    const listing = await Listings.findOne({ _id: req.params.id });
+    if (!listing) {
+        return res.json({
+            success: false,
+            status: 404,
+            message: "Listing Not found",
+        });
+    }
 
-    // const userWishlist = await wishlistModel.findOne({ userId: viewerId, listingId: req.params.id });
-    // console.log(userWishlist);
-    // const detailedListing = await getDetailedListing(listing.toObject());
+    const userWishlist = await wishlistModel.findOne({ userId: viewerId, listingId: req.params.id });
+    console.log(userWishlist);
+    const detailedListing = await getDetailedListing(listing.toObject());
 
 
-    // if (typeof userWishlist === "object" && userWishlist) {
-    //     detailedListing.likedStatus = "liked"
-    //     detailedListing.recordId = userWishlist._id;
-    //     console.log(detailedListing);
-    // }
-    // return res.json({
-    //     success: true,
-    //     message: "Listing found",
-    //     status: 200,
-    //     listing: detailedListing,
-    // });
+    if (typeof userWishlist === "object" && userWishlist) {
+        detailedListing.likedStatus = "liked"
+        detailedListing.recordId = userWishlist._id;
+        console.log(detailedListing);
+    }
+    return res.json({
+        success: true,
+        message: "Listing found",
+        status: 200,
+        listing: detailedListing,
+    });
 });
 
 export const add = catchAsync(async (req, res) => {
