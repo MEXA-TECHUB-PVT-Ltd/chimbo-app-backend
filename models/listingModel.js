@@ -137,7 +137,12 @@ const listingSchema = Schema({
     addedBy: {
         type: String,
         default: "user"
-    }
+    },distance:{
+        type: String,
+
+    },likedBy:[{
+        type: String,
+    }]
 
 
 },
