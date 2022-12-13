@@ -60,7 +60,39 @@ export const add = catchAsync(async (req, res, next) => {
     })
 
     const userData = JSON.parse(JSON.stringify(req.body))
+   console.log(userData.loginType)  
+   if(userData.loginType==='gmail'||userData.loginType==='fb'){
+    console.log('matched')
 
+     const user = await Users.create(userData);
+    if (!user) {
+        return res.json({
+            success: false,
+            status: 500,
+            message: "User could not be added"
+        })
+    }
+
+    const token = jwt.sign(
+        { id: user._id, email: user.email, username: user.username, role: "USER" },
+        process.env.JWT_SECRET,
+        { expiresIn: "700h" }
+    );
+
+    return res.json({
+        success: true,
+        status: 200,
+        message: "User signed up successfully",
+        user: {
+            id: user._id,
+            email: user.email,
+            name: user.name,
+            // name: `${user.firstName} ${user.lastName}`,
+            token,
+        },
+    });
+   }else{
+    console.log('matched ddd')
     userData.password = hashSync(userData.password, 10)
 
     const user = await Users.create(userData);
@@ -90,6 +122,38 @@ export const add = catchAsync(async (req, res, next) => {
             token,
         },
     });
+   }
+
+
+    // userData.password = hashSync(userData.password, 10)
+
+    // const user = await Users.create(userData);
+    // if (!user) {
+    //     return res.json({
+    //         success: false,
+    //         status: 500,
+    //         message: "User could not be added"
+    //     })
+    // }
+
+    // const token = jwt.sign(
+    //     { id: user._id, email: user.email, username: user.username, role: "USER" },
+    //     process.env.JWT_SECRET,
+    //     { expiresIn: "700h" }
+    // );
+
+    // return res.json({
+    //     success: true,
+    //     status: 200,
+    //     message: "User signed up successfully",
+    //     user: {
+    //         id: user._id,
+    //         email: user.email,
+    //         name: user.name,
+    //         // name: `${user.firstName} ${user.lastName}`,
+    //         token,
+    //     },
+    // });
 });
 
 const updateUser = async (id, user) => {

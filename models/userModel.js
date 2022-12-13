@@ -38,6 +38,10 @@ const userSchema = new Schema({
         type: Boolean,
         default: false,
     },
+    loginType:{
+        type: String,
+        required: false,
+    }
 });
 
 export default model("Users", userSchema);
