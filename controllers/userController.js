@@ -163,47 +163,88 @@ const updateUser = async (id, user) => {
     return updatedUser;
 };
 
-//Update
-export const update = catchAsync(async (req, res, next) => {
-    const existing = await Users.findOne({ _id: req.body.id });
-    if (!existing) return res.json({
-        success: false,
-        message: "User not found"
-    })
+//Update updateUserData
+export const updateUserData = async (req, res) => {
+    console.log(req.body.name)
+    const updateData = {
+        name: req.body.name,
+        phoneNo: req.body.phoneNo,
+        address: req.body.address,
+        pfp: req.body.pfp,
+        description: req.body.description,
 
-    const { id, email } = req.body;
-    if (email) {
-        if (email !== existing.email) {
-            const isEmailUnique = await checkEmail(email);
-            if (!isEmailUnique) return res.json({
-                success: false,
-                message: "Email already exists"
-            })
+    }
+    const options = {
+        new: true
+    }
+    Users.findByIdAndUpdate(req.body._id, updateData, options, (error, result) => {
+        if (error) {
+            res.json(error.message)
+        } else {
+            res.send({ data: result, message: "Updated Successfully" })
         }
+    })
+}
+export const update = async (req, res) => {
+    // const existing = await Users.findOne({ _id: req.body.id });
+    // if (!existing) return res.json({
+    //     success: false,
+    //     message: "User not found"
+    // })
+
+    // const { id, email } = req.body;
+    // if (email) {
+    //     if (email !== existing.email) {
+    //         const isEmailUnique = await checkEmail(email);
+    //         if (!isEmailUnique) return res.json({
+    //             success: false,
+    //             message: "Email already exists"
+    //         })
+    //     }
+    // }
+
+    // const data = JSON.parse(JSON.stringify(req.body));
+
+    // if (data.password) {
+    //     delete data.password
+    // }
+
+    // const user = await updateUser(id, data);
+
+    // if (user) {
+    //     return res.json({
+    //         success: true,
+    //         message: "User updated successfully",
+    //         user,
+    //     });
+    // }
+
+    // return res.json({
+    //     success: false,
+    //     message: "User could not be updated",
+    // });
+  
+// const updateData = {
+//     name:req.body.name,
+//     genderId:req.body.genderId,
+//     phoneNo:req.body.phoneNo,
+//     address:req.body.address,
+//     pfp: req.body.pfp,
+//     description: req.body.description
+
+// }
+// const options = {
+//     new: true
+// }
+// Users.findByIdAndUpdate(req.body.id, updateData, options, (error, result) => {
+    if (error) {
+        res.json(error.message)
+    } else {
+        res.send({ data: result, message: "Updated Successfully" })
     }
-
-    const data = JSON.parse(JSON.stringify(req.body));
-
-    if (data.password) {
-        delete data.password
-    }
-
-    const user = await updateUser(id, data);
-
-    if (user) {
-        return res.json({
-            success: true,
-            message: "User updated successfully",
-            user,
-        });
-    }
-
-    return res.json({
-        success: false,
-        message: "User could not be updated",
-    });
-});
-
+// })
+}
+// end 
 //Get All
 export const getAll = async (_, res) => {
     const users = await Users.find();

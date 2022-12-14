@@ -17,6 +17,7 @@ import {
     getAll,
     getByEmail,
     changePassword,
+    updateUserData,
     uploadPfp,
 } from "../controllers/userController.js";
 
@@ -59,6 +60,8 @@ route.patch("/block", block);
 route.patch("/unblock", unblock);
 route.post("/getByEmail", getByEmail);
 route.post("/verifyOtp", verifyOtp);
+route.put("/updateUserData", updateUserData)
+
 route.patch("/changePassword", changePassword);
 route.put( "/uploadPfp" ,upload.single('profile-photo'), (req, res) => {
         try {
