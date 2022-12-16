@@ -4,7 +4,7 @@ const { Schema, model, Types } = mongoose;
 const userSchema = new Schema({
     name: {
         type: String,
-        required: true,
+        required: false,
     },
     email: {
         type: String,
@@ -16,15 +16,15 @@ const userSchema = new Schema({
     },
     genderId: {
         type: Types.ObjectId,
-        required: true,
+        required: false,
     },
     phoneNo: {
         type: String,
-        required: true,
+        required: false,
     },
     address: {
         type: String,
-        required: true,
+        required: false,
     },
     description: {
         type: String,

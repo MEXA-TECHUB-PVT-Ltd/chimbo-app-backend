@@ -85,6 +85,26 @@ export const AddLikeByUserId = catchAsync(async (req, res) => {
     })
   
 });
+export const UnLikeByUserId = catchAsync(async (req, res) => {
+    const userId=req.params.userId;
+    const ListingId=req.params.ListingId;
+    const updateData = {
+        $pull: {
+            likedBy: userId,
+        }
+    }
+    const options = {
+        new: true
+    }
+    Listings.findByIdAndUpdate(ListingId, updateData, options, (error, result) => {
+        if (error) {
+            res.json(error.message)
+        } else {
+            res.send({data:result,message:"Updated Successfully"})
+        }
+    })
+  
+});
 export const getAll = catchAsync(async (req, res) => {
     // await Listings.deleteMany()
     const recordPerPage = 5;

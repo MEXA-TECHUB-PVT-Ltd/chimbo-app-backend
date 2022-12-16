@@ -5,7 +5,7 @@ const router = express.Router();
 import chklisting from '../middleware/listingMiddleware.js';
 import {
     getAll, get, add, del, update, getListingsInsidePolygon, filter, uploadImages, getCountOfDocs,
-    getByUser, uploadVideo, getIDs, searchByCity, chartData,getIDsByLocation,AddLikeByUserId
+    getByUser, uploadVideo, getIDs, searchByCity, chartData,getIDsByLocation,AddLikeByUserId,UnLikeByUserId
 } from "../controllers/listingController.js";
 // Upload Image 
 const multerMiddleWareStorage = multer.diskStorage({
@@ -64,6 +64,7 @@ router.get("/getIDs", getIDs);
 router.post("/getByUser/:id", getByUser);
 router.post("/get/:id", get);
 router.get("/likeListing/:userId/:ListingId", AddLikeByUserId);
+router.get("/unlikeListingByUser/:userId/:ListingId", UnLikeByUserId);
 
 router.get("/get-listing-by-userID-location/:userId/:userLat/:userLong",getIDsByLocation);
 
