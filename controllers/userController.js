@@ -523,7 +523,7 @@ export const getByEmail = catchAsync(async (req, res, next) => {
     const otp = UniqueKey();
 
     await otpModel.create({ userId: user._id, otp: otp });
-    const style = emailOTPBody(otp, "Mi Casa")
+    const style = emailOTPBody(otp, "mi Casa")
     await sendEmail(user.email, style, "Forgot Password")
 
     return res.json({
