@@ -15,39 +15,114 @@ config();
 
 //Login
 export const login = catchAsync(async (req, res, next) => {
-    const { email, password } = req.body;
+    //     const { email, password } = req.body;
 
-    const user = await Users.findOne({ email });
-    if (!user) return res.status(400).json({
-        success: false,
-        status: 400,
-        message: "Incorrect Email"
+    //     const user = await Users.findOne({ email });
+    //     if (!user) return res.status(400).json({
+    //         success: false,
+    //         status: 400,
+    //         message: "Incorrect Email"
+    //     })
+
+    //     // if (!check(password, user.password))
+    //     if (!bcrypt.compareSync(password, user.password)){
+    // console.log('data')
+    //     }else{
+    //         console.log(' no data')
+
+    //     }
+    //         return res.status(400).json({
+    //             success: false,
+    //             status: 400,
+    //             message: "Incorrect Password"
+    //         });
+
+    //     const token = jwt.sign(
+    //         { id: user._id, email: user.email, role: "USER" },
+    //         process.env.JWT_SECRET,
+    //         { expiresIn: "700h" }
+    //     );
+
+    //     return res.json({
+    //         success: true,
+    //         status: 200,
+    //         message: "User logged in successfully",
+    //         user: {
+    //             id: user._id,
+    //             email: user.email,
+    //             name: user.name,
+    //             token,
+    //         },
+    //     });
+
+    // const {email,password}= req.body
+    const findUser = {
+        email: req.body.email
+    }
+    Users.findOne(findUser, (error, result) => {
+        if (error) {
+            res.json(error)
+        } else {
+            if (result) {
+                console.log(result)
+                if (result.loginType === 'gmail' || result.loginType === 'fb') {
+                    if (req.body.password===result.password) {
+                        console.log('trye')
+                        res.json({
+                            success: true,
+                            status: 200,
+                            message: "User logged in successfully",
+                            user: {
+                                id: result._id,
+                                email: result.email,
+                                name: result.name,
+                                // token,
+                            },
+                        });
+                    } else {
+                        res.json({ message: "Invalid Password" })
+
+                    }
+                } else {
+                    if (bcrypt.compareSync(req.body.password, result.password)) {
+                        res.json({
+                            success: true,
+                            status: 200,
+                            message: "User logged in successfully",
+                            user: {
+                                id: result._id,
+                                email: result.email,
+                                name: result.name,
+                                // token,
+                            },
+                        });
+
+                    } else {
+                        res.json({ message: "Invalid Password" })
+                    }
+                }
+                // if (bcrypt.compareSync(req.body.password, result.password)) {
+                //     res.json({
+                //                 success: true,
+                //                 status: 200,
+                //                 message: "User logged in successfully",
+                //                 user: {
+                //                     id: user._id,
+                //                     email: user.email,
+                //                     name: user.name,
+                //                     token,
+                //                 },
+                //             });
+
+                // } else {
+                //     res.json({message:"Invalid Password"})
+                // }
+            } else {
+                res.json({ message: "Email Not Found" })
+            }
+        }
     })
 
-    if (!check(password, user.password))
-        return res.status(400).json({
-            success: false,
-            status: 400,
-            message: "Incorrect Password"
-        });
-
-    const token = jwt.sign(
-        { id: user._id, email: user.email, role: "USER" },
-        process.env.JWT_SECRET,
-        { expiresIn: "700h" }
-    );
-
-    return res.json({
-        success: true,
-        status: 200,
-        message: "User logged in successfully",
-        user: {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            token,
-        },
-    });
 });
 
 //Add
@@ -60,69 +135,69 @@ export const add = catchAsync(async (req, res, next) => {
     })
 
     const userData = JSON.parse(JSON.stringify(req.body))
-   console.log(userData.loginType)  
-   if(userData.loginType==='gmail'||userData.loginType==='fb'){
-    console.log('matched')
+    console.log(userData.loginType)
+    if (userData.loginType === 'gmail' || userData.loginType === 'fb') {
+        console.log('matched')
 
-     const user = await Users.create(userData);
-    if (!user) {
+        const user = await Users.create(userData);
+        if (!user) {
+            return res.json({
+                success: false,
+                status: 500,
+                message: "User could not be added"
+            })
+        }
+
+        const token = jwt.sign(
+            { id: user._id, email: user.email, username: user.username, role: "USER" },
+            process.env.JWT_SECRET,
+            { expiresIn: "700h" }
+        );
+
         return res.json({
-            success: false,
-            status: 500,
-            message: "User could not be added"
-        })
-    }
+            success: true,
+            status: 200,
+            message: "User signed up successfully",
+            user: {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                // name: `${user.firstName} ${user.lastName}`,
+                token,
+            },
+        });
+    } else {
+        console.log('matched ddd')
+        userData.password = hashSync(userData.password, 10)
 
-    const token = jwt.sign(
-        { id: user._id, email: user.email, username: user.username, role: "USER" },
-        process.env.JWT_SECRET,
-        { expiresIn: "700h" }
-    );
+        const user = await Users.create(userData);
+        if (!user) {
+            return res.json({
+                success: false,
+                status: 500,
+                message: "User could not be added"
+            })
+        }
 
-    return res.json({
-        success: true,
-        status: 200,
-        message: "User signed up successfully",
-        user: {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            // name: `${user.firstName} ${user.lastName}`,
-            token,
-        },
-    });
-   }else{
-    console.log('matched ddd')
-    userData.password = hashSync(userData.password, 10)
+        const token = jwt.sign(
+            { id: user._id, email: user.email, username: user.username, role: "USER" },
+            process.env.JWT_SECRET,
+            { expiresIn: "700h" }
+        );
 
-    const user = await Users.create(userData);
-    if (!user) {
         return res.json({
-            success: false,
-            status: 500,
-            message: "User could not be added"
-        })
+            success: true,
+            status: 200,
+            message: "User signed up successfully",
+            user: {
+                id: user._id,
+                email: user.email,
+                name: user.name,
+                // name: `${user.firstName} ${user.lastName}`,
+                token,
+            },
+        });
     }
-
-    const token = jwt.sign(
-        { id: user._id, email: user.email, username: user.username, role: "USER" },
-        process.env.JWT_SECRET,
-        { expiresIn: "700h" }
-    );
-
-    return res.json({
-        success: true,
-        status: 200,
-        message: "User signed up successfully",
-        user: {
-            id: user._id,
-            email: user.email,
-            name: user.name,
-            // name: `${user.firstName} ${user.lastName}`,
-            token,
-        },
-    });
-   }
 
 
     // userData.password = hashSync(userData.password, 10)
@@ -223,26 +298,26 @@ export const update = async (req, res) => {
     //     success: false,
     //     message: "User could not be updated",
     // });
-  
-// const updateData = {
-//     name:req.body.name,
-//     genderId:req.body.genderId,
-//     phoneNo:req.body.phoneNo,
-//     address:req.body.address,
-//     pfp: req.body.pfp,
-//     description: req.body.description
 
-// }
-// const options = {
-//     new: true
-// }
-// Users.findByIdAndUpdate(req.body.id, updateData, options, (error, result) => {
+    // const updateData = {
+    //     name:req.body.name,
+    //     genderId:req.body.genderId,
+    //     phoneNo:req.body.phoneNo,
+    //     address:req.body.address,
+    //     pfp: req.body.pfp,
+    //     description: req.body.description
+
+    // }
+    // const options = {
+    //     new: true
+    // }
+    // Users.findByIdAndUpdate(req.body.id, updateData, options, (error, result) => {
     if (error) {
         res.json(error.message)
     } else {
         res.send({ data: result, message: "Updated Successfully" })
     }
-// })
+    // })
 }
 // end 
 //Get All
@@ -448,7 +523,7 @@ export const getByEmail = catchAsync(async (req, res, next) => {
     const otp = UniqueKey();
 
     await otpModel.create({ userId: user._id, otp: otp });
-    const style = emailOTPBody(otp, "Chimmbo")
+    const style = emailOTPBody(otp, "mi Casa")
     await sendEmail(user.email, style, "Forgot Password")
 
     return res.json({

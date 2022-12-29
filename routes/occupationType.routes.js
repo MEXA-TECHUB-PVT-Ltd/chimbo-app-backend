@@ -14,7 +14,7 @@ route.get("/getAll", getAll);
 route.get("/get/:id", get);
 
 route.put("/add", add);
-route.patch("/update", auth, update);
-route.delete("/delete/:id", auth, del);
+route.patch("/update", update);
+route.delete("/delete/:id", del);
 
 export default route;

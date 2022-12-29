@@ -34,6 +34,28 @@ export const add = catchAsync(async (req, res) => {
         wishListItem,
     });
 });
+export const checkWishlistExistOrNot = catchAsync(async (req, res) => {
+    const { listingId, userId } = req.body;
+    WishListItems.find({
+        listingId,
+         userId
+
+    }, (error, result) => {
+        if (error) {
+            res.send(error)
+        } else {
+            if (result.length===0) {
+                res.json({data:result,message:"wishlist Not exist"})
+
+            } else {
+                res.json({data:result,message:"wishlist exist"})
+
+            }
+
+        }
+    })
+   
+});
 
 export const getAll = catchAsync(async (_, res) => {
     const wishListItems = await WishListItems.find();
